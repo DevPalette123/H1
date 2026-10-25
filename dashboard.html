@@ -108,8 +108,8 @@
 
     <section class="dash-card">
       <h2>مقارنة المتوسطات بين الفئات</h2>
-      <p class="hint">كلما اقترب اللون من الأخضر الداكن زادت الموافقة. الفئات ذات العدد القليل (أقل من ٥) تُقرأ بحذر.</p>
-      <div class="tbl-scroll"><table class="tbl" id="roleTable"></table></div>
+      <p class="hint">كل لون يمثل فئة، ويكبر الجزء كلما ارتفع متوسط الفئة (من ٥). الرقم في الوسط هو المتوسط العام. الفئات ذات العدد القليل (أقل من ٥) تُقرأ بحذر.</p>
+      <div class="rings" id="roleRings"></div>
     </section>
 
     </div>
@@ -365,16 +365,33 @@
     }), allCount, "إجابة");
 
     /* مقارنة الفئات */
-    var head = "<tr><th>العبارة</th><th>الكل<span class='small-n'>(" + ar(res.n) + ")</span></th>" +
-      roleCodes.map(function (c) {
-        var n = res.roleCounts[c];
-        return "<th>" + esc(roleLabel[c]) + "<span class='small-n'>(" + ar(n) + ")" + (n > 0 && n < 5 ? " قليل" : "") + "</span></th>";
-      }).join("") + "</tr>";
-    function cell(v) { var h = heat(v); return '<td class="heat" style="background:' + h.bg + ";color:" + h.fg + '">' + fmt(v, 2) + "</td>"; }
-    $("roleTable").innerHTML = head + res.statements.map(function (s) {
-      return "<tr><td>" + ar(s.index + 1) + ". " + esc(s.text) + "</td>" + cell(s.all.mean) +
-        roleCodes.map(function (c) { return cell(s.roles[c].mean); }).join("") + "</tr>";
-    }).join("");
+    /* دائرة ملونة واحدة بأسلوب Microsoft Forms: كل فئة جزء بلون، وحجم الجزء بحسب متوسطها */
+    function roleMean(code) {
+      var vals = res.statements.map(function (st) { return st.roles[code].mean; }).filter(function (m) { return m != null; });
+      return vals.length ? vals.reduce(function (x, y) { return x + y; }, 0) / vals.length : null;
+    }
+    var cats = roleCodes.map(function (c, i) {
+      return { code: c, label: roleLabel[c], n: res.roleCounts[c], color: PALETTE[i], mean: res.roleCounts[c] ? roleMean(c) : null };
+    });
+    var withData = cats.filter(function (ct) { return ct.mean != null; });
+    var sumMeans = withData.reduce(function (x, ct) { return x + ct.mean; }, 0);
+    (function () {
+      var R = 44, CIRC = 2 * Math.PI * R, acc = 0, segs = "";
+      withData.forEach(function (ct) {
+        var len = ct.mean / sumMeans * CIRC;
+        segs += '<circle cx="60" cy="60" r="' + R + '" fill="none" stroke="' + ct.color + '" stroke-width="22" stroke-dasharray="' + len.toFixed(2) + " " + (CIRC - len).toFixed(2) +
+          '" stroke-dashoffset="' + (-acc).toFixed(2) + '" transform="rotate(-90 60 60)"><title>' + esc(ct.label) + ": " + fmt(ct.mean, 2) + "</title></circle>";
+        acc += len;
+      });
+      var svg = '<svg viewBox="0 0 120 120" role="img" aria-label="مقارنة المتوسطات بين الفئات"><circle cx="60" cy="60" r="' + R + '" fill="none" stroke="#eef1f8" stroke-width="22"/>' + segs +
+        '<text x="60" y="58" text-anchor="middle" font-size="20" font-weight="700" fill="#061a5c" style="font-family:inherit">' + fmt(res.overallMean, 2) + "</text>" +
+        '<text x="60" y="76" text-anchor="middle" font-size="9" fill="#5b6478" style="font-family:inherit">المتوسط العام</text></svg>';
+      var leg = cats.map(function (ct) {
+        return '<div class="dl"><i style="background:' + ct.color + '"></i><span class="dn">' + esc(ct.label) + '</span><span class="dv">' +
+          (ct.mean == null ? "لا توجد مشاركات" : "المتوسط <b>" + fmt(ct.mean, 2) + "</b> (" + ar(ct.n) + (ct.n < 5 ? " – عدد قليل" : "") + ")") + "</span></div>";
+      }).join("");
+      $("roleRings").innerHTML = '<div class="donut-wrap"><div class="donut">' + svg + '</div><div class="dlegend">' + leg + "</div></div>";
+    })();
 
     /* القيم */
     var top = res.values.slice(0, 12), mx = top.length ? top[0].count : 1;
@@ -433,7 +450,7 @@
   $("openSearch").addEventListener("input", renderAnswers);
   $("openRole").addEventListener("change", renderAnswers);
 
-  /* ---------- بدء التشغيل: ?demo=1 أو جلسة سابقة ---------- */
+  /* ---------- بدء التشغيل: جلسة سابقة ---------- */
   var saved = ""; try { saved = sessionStorage.getItem(PW_KEY) || ""; } catch (x) {}
   if (saved && C.SCRIPT_URL) {
     $("loginBox").hidden = true;
