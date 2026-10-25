@@ -197,6 +197,7 @@ footer { text-align: center; color: var(--muted); font-size: .85rem; padding: 18
 .topbar h1 { margin: 0; font-size: 1.15rem; color: var(--navy-dark); font-weight: 800; line-height: 1.4; }
 .topbar .sub { color: var(--muted); font-size: .85rem; }
 .topbar .spacer { flex: 1; }
+.topbar .wrap.wide.inner { width: 100%; max-width: none; padding-inline: 28px; box-sizing: border-box; }
 
 .login { max-width: 420px; margin: 48px auto; text-align: center; }
 .login input {
@@ -311,13 +312,3 @@ details.more > summary::-webkit-details-marker { display: none; }
 details.more > summary::before { content: "◂ "; }
 details.more[open] > summary::before { content: "▾ "; }
 @media print { .panel[hidden] { display: block !important; } }
-
-/* ===== دائرة مقارنة الفئات (رادار) ===== */
-.radar svg { width: 100%; max-width: 420px; display: block; margin: 0 auto; }
-.rlegend { max-width: 420px; margin: 6px auto 0; }
-.rlegend .dv b { color: var(--navy-dark); }
-.rlegend .dl { flex-wrap: wrap; }
-.rlegend .dv { white-space: normal; }
-.radar svg { max-width: 520px; }
-.rlegend .dl { justify-content: center; gap: 10px; }
-.rlegend .dv { margin-inline-start: 0; }
