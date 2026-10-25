@@ -1,0 +1,469 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>لوحة التحليلات | استبيان الرؤية والرسالة والقيم</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <link rel="icon" href="assets/logo.png">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="wrap wide inner">
+    <img src="assets/logo.png" alt="شعار المدرسة">
+    <div>
+      <h1>لوحة تحليلات الاستبيان</h1>
+      <div class="sub">رؤية المدرسة ورسالتها وقيمها · <span id="schoolName"></span></div>
+    </div>
+    <span class="spacer"></span>
+    <button class="btn ghost small no-print" id="logoutBtn" hidden>خروج</button>
+  </div>
+</header>
+
+<!-- ============ شاشة الدخول ============ -->
+<section class="wrap login card" id="loginBox">
+  <h2 style="justify-content:center">دخول الإدارة</h2>
+  <p class="hint" style="margin:0">هذه الصفحة مخصصة لمن يحق له الاطلاع على النتائج.</p>
+  <form id="loginForm" autocomplete="off">
+    <input type="password" id="pw" placeholder="كلمة المرور" aria-label="كلمة المرور" required>
+    <button class="btn" type="submit" id="loginBtn">دخول</button>
+  </form>
+  <div id="loginMsg"></div>
+  <div class="or">— أو —</div>
+  <button class="btn ghost small" id="demoBtn" type="button">معاينة بيانات تجريبية</button>
+</section>
+
+<!-- ============ اللوحة ============ -->
+<main class="wrap wide" id="dash" hidden>
+  <div id="demoNote"></div>
+
+  <div class="toolbar no-print">
+    <button class="btn small" id="refreshBtn">↻ تحديث</button>
+    <button class="btn small gold" id="csvBtn">⬇ تصدير CSV (Excel)</button>
+    <button class="btn small ghost" id="printBtn">🖨 طباعة / حفظ PDF</button>
+    <span class="spacer"></span>
+    <span class="stamp" id="stamp"></span>
+  </div>
+
+  <div id="emptyState" class="dash-card empty" hidden>
+    <h2>لا توجد إجابات بعد</h2>
+    <p>ستظهر الإحصائيات هنا بمجرد وصول أول مشاركة.</p>
+  </div>
+
+  <div id="content">
+    <div class="kpis" id="kpis"></div>
+
+    <div class="tabs main-tabs no-print" id="mainTabs" role="tablist">
+      <button class="tab" role="tab" data-p="0" aria-selected="true">نظرة عامة</button>
+      <button class="tab" role="tab" data-p="1" aria-selected="false">نتائج العبارات</button>
+      <button class="tab" role="tab" data-p="2" aria-selected="false">الإجابات والقيم</button>
+    </div>
+
+    <div class="panel" data-p="0">
+
+    <div class="grid2">
+      <section class="dash-card">
+        <h2>المشاركون حسب الصفة</h2>
+        <p class="hint">عدد المشاركات ونسبتها.</p>
+        <div id="roleBars"></div>
+      </section>
+      <section class="dash-card">
+        <h2>هل اطلعوا على الرؤية والرسالة والقيم قبل الاستبيان؟</h2>
+        <p class="hint">كل المشاركين، ثم حسب الصفة.</p>
+        <div id="awareBars"></div>
+        <div class="tbl-scroll" style="margin-top:10px"><table class="tbl" id="awareTable"></table></div>
+      </section>
+    </div>
+
+    <section class="dash-card">
+      <h2>أبرز النتائج</h2>
+      <p class="hint">ملخص يُولَّد تلقائيًا من متوسطات العبارات (من ٥).</p>
+      <ul class="insights" id="insights"></ul>
+    </section>
+
+    </div>
+
+    <div class="panel" data-p="1" hidden>
+    <div class="grid2">
+      <section class="dash-card">
+        <h2>متوسط كل محور</h2>
+        <p class="hint">المقياس من ١ (لا أوافق بشدة) إلى ٥ (أوافق بشدة).</p>
+        <div id="axisBars"></div>
+      </section>
+      <section class="dash-card">
+        <h2>التوزيع العام للإجابات</h2>
+        <p class="hint">كل إجابات العبارات مجتمعة.</p>
+        <div id="overallDonut"></div>
+      </section>
+    </div>
+
+    <section class="dash-card">
+      <h2>توزيع الموافقة على كل عبارة</h2>
+      <div class="legend" id="legend"></div>
+      <div id="statements"></div>
+    </section>
+
+    <section class="dash-card">
+      <h2>مقارنة المتوسطات بين الفئات</h2>
+      <p class="hint">كل لون يمثل فئة، ويكبر الجزء كلما ارتفع متوسط الفئة (من ٥). الرقم في الوسط هو المتوسط العام. الفئات ذات العدد القليل (أقل من ٥) تُقرأ بحذر.</p>
+      <div class="rings" id="roleRings"></div>
+    </section>
+
+    </div>
+
+    <div class="panel" data-p="2" hidden>
+    <section class="dash-card">
+      <h2>القيم الأكثر اقتراحًا</h2>
+      <p class="hint">من إجابات السؤال: «ما أهم ثلاث قيم ترى ضرورة التركيز عليها؟» — تُحسب الكلمات المتشابهة معًا.</p>
+      <div id="valueBars"></div>
+    </section>
+
+    <section class="dash-card">
+      <h2>الإجابات المفتوحة</h2>
+      <div class="tabs" id="openTabs" role="tablist"></div>
+      <div class="toolbar" style="margin-top:0">
+        <input type="search" id="openSearch" placeholder="بحث في الإجابات…" aria-label="بحث">
+        <select id="openRole" aria-label="تصفية حسب الصفة"></select>
+        <span class="spacer"></span>
+        <span class="stamp" id="openCount"></span>
+      </div>
+      <div class="answers" id="answers"></div>
+    </section>
+
+    <section class="dash-card">
+      <h2>المشاركات عبر الأيام</h2>
+      <div class="spark" id="spark"></div>
+      <div class="spark-labels" id="sparkLabels"></div>
+    </section>
+    </div>
+  </div>
+</main>
+
+<footer class="no-print">لوحة سرّية · لا تشاركي رابطها أو كلمة مرورها مع المشاركين</footer>
+
+<script src="config.js"></script>
+<script src="analysis.js"></script>
+<script>
+(function () {
+  "use strict";
+  var C = window.SURVEY_CONFIG, A = window.SurveyAnalysis;
+  var PW_KEY = "balqis_dash_pw";
+  var $ = function (id) { return document.getElementById(id); };
+  var AR_DIGITS = "٠١٢٣٤٥٦٧٨٩";
+  function ar(n) { return String(n).replace(/\d/g, function (d) { return AR_DIGITS[d]; }); }
+  function fmt(x, d) { return x == null ? "—" : ar(Number(x).toFixed(d == null ? 1 : d)); }
+  function esc(s) { var d = document.createElement("div"); d.textContent = String(s == null ? "" : s); return d.innerHTML; }
+
+  var roleLabel = {}, awareLabel = {};
+  C.ROLES.forEach(function (r) { roleLabel[r.code] = r.label; });
+  C.AWARE.forEach(function (a) { awareLabel[a.code] = a.label; });
+  var roleCodes = C.ROLES.map(function (r) { return r.code; });
+
+  $("schoolName").textContent = C.SCHOOL_NAME;
+
+  var state = { rows: [], res: null, demo: false, openTab: 0, generated: "" };
+
+  /* ---------- الدخول ---------- */
+  function msg(html, cls) { $("loginMsg").innerHTML = html ? '<div class="notice ' + cls + '">' + html + "</div>" : ""; }
+
+  function fetchResults(password) {
+    return fetch(C.SCRIPT_URL, { method: "POST", body: JSON.stringify({ action: "results", password: password }) })
+      .then(function (r) { return r.json(); });
+  }
+
+  function enter(rows, demo, generated) {
+    state.rows = rows; state.demo = demo; state.generated = generated || "";
+    $("loginBox").hidden = true;
+    $("dash").hidden = false;
+    $("logoutBtn").hidden = false;
+    $("demoNote").innerHTML = demo ? '<div class="notice demo"><b>بيانات تجريبية:</b> هذه أرقام وهمية لمعاينة شكل اللوحة فقط، وليست إجابات حقيقية.</div>' : "";
+    render();
+  }
+
+  $("loginForm").addEventListener("submit", function (e) {
+    e.preventDefault();
+    if (!C.SCRIPT_URL) { msg("لم يُربط الموقع بجدول Google Sheets بعد. يمكنك معاينة اللوحة ببيانات تجريبية.", "demo"); return; }
+    var pw = $("pw").value;
+    $("loginBtn").disabled = true; $("loginBtn").textContent = "جارٍ التحقق…"; msg("");
+    fetchResults(pw).then(function (res) {
+      if (res && res.ok) {
+        try { sessionStorage.setItem(PW_KEY, pw); } catch (x) {}
+        enter(res.rows || [], false, res.generated);
+      } else if (res && res.error === "unauthorized") {
+        msg("كلمة المرور غير صحيحة.", "error");
+      } else { msg("حدث خطأ غير متوقع. حاولي مرة أخرى.", "error"); }
+    }).catch(function () {
+      msg("تعذّر الاتصال بالخادم. تأكدي من الإنترنت ومن صحة رابط السكربت في config.js.", "error");
+    }).then(function () {
+      $("loginBtn").disabled = false; $("loginBtn").textContent = "دخول";
+    });
+  });
+
+  function startDemo() { enter(A.demoRows(64, C), true, ""); }
+  $("demoBtn").addEventListener("click", startDemo);
+
+  $("logoutBtn").addEventListener("click", function () {
+    try { sessionStorage.removeItem(PW_KEY); } catch (x) {}
+    window.location.search = "";
+    window.location.reload();
+  });
+
+  $("refreshBtn").addEventListener("click", function () {
+    if (state.demo) { startDemo(); return; }
+    var pw = ""; try { pw = sessionStorage.getItem(PW_KEY) || ""; } catch (x) {}
+    var b = $("refreshBtn"); b.disabled = true; b.textContent = "جارٍ التحديث…";
+    fetchResults(pw).then(function (res) {
+      if (res && res.ok) enter(res.rows || [], false, res.generated);
+      else { try { sessionStorage.removeItem(PW_KEY); } catch (x) {} window.location.reload(); }
+    }).catch(function () { alert("تعذّر التحديث. تأكدي من الاتصال بالإنترنت."); })
+      .then(function () { b.disabled = false; b.textContent = "↻ تحديث"; });
+  });
+
+  $("csvBtn").addEventListener("click", function () {
+    var blob = new Blob([A.toCSV(state.rows, C)], { type: "text/csv;charset=utf-8" });
+    var a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "balqis-survey-" + new Date().toISOString().slice(0, 10) + ".csv";
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(function () { URL.revokeObjectURL(a.href); }, 2000);
+  });
+  $("printBtn").addEventListener("click", function () { window.print(); });
+
+  /* ---------- مساعدات الرسم ---------- */
+  function hbar(label, pct, numText, gold) {
+    return '<div class="hbar"><span>' + esc(label) + '</span><div class="track"><div class="fill' + (gold ? " gold" : "") +
+      '" style="width:' + Math.max(0, Math.min(100, pct)) + '%"></div></div><span class="num">' + numText + "</span></div>";
+  }
+  function pctOf(a, b) { return b ? Math.round(a / b * 100) : 0; }
+
+  /* رسم دائري (Doughnut) بأسلوب Microsoft Forms — SVG بدون مكتبات */
+  var PALETTE = ["#0b2a8a", "#b8935a", "#2e8b8b", "#7a5195", "#d1603d", "#6b8e23"];
+  var SCALE_COLORS = { 1: "#c4452d", 2: "#eba765", 3: "#c9ced9", 4: "#78b992", 5: "#1b7a4b" };
+  function donut(items, centerNum, centerLabel) {
+    var total = items.reduce(function (s, it) { return s + it.count; }, 0);
+    var R = 44, CIRC = 2 * Math.PI * R, acc = 0, segs = "";
+    items.forEach(function (it) {
+      if (!it.count || !total) return;
+      var len = it.count / total * CIRC;
+      segs += '<circle cx="60" cy="60" r="' + R + '" fill="none" stroke="' + it.color + '" stroke-width="22" stroke-dasharray="' +
+        len.toFixed(2) + " " + (CIRC - len).toFixed(2) + '" stroke-dashoffset="' + (-acc).toFixed(2) + '" transform="rotate(-90 60 60)"><title>' +
+        esc(it.label) + ": " + ar(it.count) + "</title></circle>";
+      acc += len;
+    });
+    var svg = '<svg viewBox="0 0 120 120" role="img" aria-label="رسم دائري"><circle cx="60" cy="60" r="' + R + '" fill="none" stroke="#eef1f8" stroke-width="22"/>' + segs +
+      '<text x="60" y="58" text-anchor="middle" font-size="20" font-weight="700" fill="#061a5c" style="font-family:inherit">' + ar(centerNum) + "</text>" +
+      '<text x="60" y="76" text-anchor="middle" font-size="9" fill="#5b6478" style="font-family:inherit">' + esc(centerLabel) + "</text></svg>";
+    var leg = items.map(function (it) {
+      return '<div class="dl"><i style="background:' + it.color + '"></i><span class="dn">' + esc(it.label) + '</span><span class="dv">' +
+        ar(it.count) + " (" + ar(pctOf(it.count, total)) + "٪)</span></div>";
+    }).join("");
+    return '<div class="donut-wrap"><div class="donut">' + svg + '</div><div class="dlegend">' + leg + "</div></div>";
+  }
+  /* أعمدة أفقية لكل خيار بلون مخصص */
+  function obar(label, pct, numText, color) {
+    return '<div class="hbar obar"><span>' + esc(label) + '</span><div class="track"><div class="fill" style="width:' + Math.max(0, Math.min(100, pct)) +
+      "%;background:" + color + '"></div></div><span class="num">' + numText + "</span></div>";
+  }
+
+  /* لون الخلية في جدول المقارنة: من برتقالي (1) إلى أخضر داكن (5) */
+  function heat(v) {
+    if (v == null) return { bg: "#f1f3f8", fg: "#8a93a8" };
+    var t = Math.max(0, Math.min(1, (v - 1) / 4));
+    var stops = [[196, 69, 45], [235, 167, 101], [201, 206, 217], [120, 185, 146], [27, 122, 75]];
+    var pos = t * (stops.length - 1), i = Math.min(stops.length - 2, Math.floor(pos)), f = pos - i;
+    var c = stops[i].map(function (s, k) { return Math.round(s + (stops[i + 1][k] - s) * f); });
+    var lum = (0.299 * c[0] + 0.587 * c[1] + 0.114 * c[2]);
+    return { bg: "rgb(" + c.join(",") + ")", fg: lum < 150 ? "#fff" : "#14213d" };
+  }
+
+  /* ---------- الرسم الرئيسي ---------- */
+  function render() {
+    var res = A.compute(state.rows, C);
+    state.res = res;
+    $("stamp").innerHTML = state.generated ? 'آخر تحديث: <bdi dir="ltr">' + esc(ar(state.generated)) + "</bdi>" : "";
+    $("emptyState").hidden = res.n > 0;
+    $("content").hidden = res.n === 0;
+    if (res.n === 0) return;
+
+    /* مؤشرات */
+    var awareAll = res.aware.all;
+    var kp = [
+      { v: ar(res.n), l: "إجمالي المشاركات" },
+      { v: fmt(res.overallMean, 2), l: "المتوسط العام (من ٥)", gold: true },
+      { v: ar(pctOf(awareAll.yes, res.n)) + "٪", l: "اطلعوا على النصوص كاملة" },
+      { v: ar(pctOf(awareAll.no, res.n)) + "٪", l: "لم يطّلعوا قبل الاستبيان" },
+      { v: res.lastTime ? '<bdi dir="ltr" style="font-size:1.35rem">' + ar(String(res.lastTime).slice(5, 16)) + "</bdi>" : "—", l: "آخر مشاركة" }
+    ];
+    $("kpis").innerHTML = kp.map(function (k) {
+      return '<div class="kpi' + (k.gold ? " gold" : "") + '"><div class="v">' + k.v + '</div><div class="l">' + k.l + "</div></div>";
+    }).join("");
+
+    /* الصفات */
+    $("roleBars").innerHTML = donut(roleCodes.map(function (c, i) {
+      return { label: roleLabel[c], count: res.roleCounts[c], color: PALETTE[i % PALETTE.length] };
+    }), res.n, "مشاركة");
+
+    /* الاطلاع */
+    var awareColors = ["#1b7a4b", "#b8935a", "#c4452d"];
+    $("awareBars").innerHTML = donut(C.AWARE.map(function (a, i) {
+      return { label: a.label, count: awareAll[a.code], color: awareColors[i % awareColors.length] };
+    }), res.n, "مشاركة");
+    var th = "<tr><th>الصفة</th>" + C.AWARE.map(function (a) { return "<th>" + esc(a.label) + "</th>"; }).join("") + "</tr>";
+    $("awareTable").innerHTML = th + roleCodes.map(function (c) {
+      var tot = res.roleCounts[c];
+      return "<tr><td>" + esc(roleLabel[c]) + " <span class='small-n'>(" + ar(tot) + ")</span></td>" +
+        C.AWARE.map(function (a) { return "<td>" + (tot ? ar(pctOf(res.aware[c][a.code], tot)) + "٪" : "—") + "</td>"; }).join("") + "</tr>";
+    }).join("");
+
+    /* أبرز النتائج */
+    var ins = [];
+    if (res.top.length) {
+      var t = res.top[0];
+      ins.push("<li>أعلى عبارة موافقة: «" + esc(t.text) + "» بمتوسط <b>" + fmt(t.all.mean, 2) + "</b> ونسبة موافقة <b>" + ar(t.all.agreePct) + "٪</b>.</li>");
+      var b = res.bottom[0];
+      if (b && b.index !== t.index) ins.push('<li class="warn">أدنى عبارة موافقة: «' + esc(b.text) + "» بمتوسط <b>" + fmt(b.all.mean, 2) + "</b> ونسبة موافقة <b>" + ar(b.all.agreePct) + "٪</b> — تستحق الانتباه.</li>");
+    }
+    var axs = res.axes.filter(function (a) { return a.mean != null; }).sort(function (x, y) { return y.mean - x.mean; });
+    if (axs.length > 1) ins.push("<li>أقوى محور: <b>" + esc(axs[0].label) + "</b> (" + fmt(axs[0].mean, 2) + ")، وأضعفها: <b>" + esc(axs[axs.length - 1].label) + "</b> (" + fmt(axs[axs.length - 1].mean, 2) + ").</li>");
+    var low = awareAll.no + awareAll.some;
+    if (res.n && pctOf(low, res.n) >= 40) ins.push('<li class="warn">' + ar(pctOf(low, res.n)) + "٪ من المشاركين لم يطّلعوا على النصوص كاملة قبل الاستبيان؛ قد يفيد نشرها بصورة أوضح.</li>");
+    var smallRoles = roleCodes.filter(function (c) { return res.roleCounts[c] > 0 && res.roleCounts[c] < 5; });
+    if (smallRoles.length) ins.push('<li class="warn">عدد المشاركات قليل لدى: ' + smallRoles.map(function (c) { return esc(roleLabel[c]); }).join("، ") + " — لا تعمّمي نتائجهم.</li>");
+    $("insights").innerHTML = ins.join("");
+
+    /* المحاور */
+    $("axisBars").innerHTML = res.axes.map(function (a) {
+      return hbar(a.label, a.mean == null ? 0 : a.mean / 5 * 100, fmt(a.mean, 2), a.key === "link");
+    }).join("");
+
+    /* توزيع العبارات */
+    $("legend").innerHTML = C.SCALE.map(function (o) { return '<span><i class="c' + o.value + '"></i>' + esc(o.label) + "</span>"; }).join("");
+    $("statements").innerHTML = res.statements.map(function (s) {
+      var st = s.all, segs = "", bars = "";
+      C.SCALE.forEach(function (o) {
+        var p = st.n ? st.counts[o.value] / st.n * 100 : 0;
+        if (p > 0) segs += '<div class="c' + o.value + '" style="width:' + p + '%" title="' + esc(o.label) + ": " + ar(st.counts[o.value]) + '">' + (p >= 9 ? ar(Math.round(p)) + "٪" : "") + "</div>";
+      });
+      C.SCALE.slice().sort(function (x, y) { return y.value - x.value; }).forEach(function (o) {
+        var n = st.counts[o.value] || 0;
+        bars += obar(o.label, pctOf(n, st.n), ar(n) + " (" + ar(pctOf(n, st.n)) + "٪)", SCALE_COLORS[o.value] || "#0b2a8a");
+      });
+      return '<div class="stmt"><div class="head"><div class="t"><em>' + ar(s.index + 1) + "</em>" + esc(s.text) +
+        '</div><div class="meta">المتوسط <b>' + fmt(st.mean, 2) + "</b> · موافقة " + ar(st.agreePct) + "٪</div></div>" +
+        '<div class="stack">' + segs + "</div>" +
+        '<details class="more"><summary>عدد كل خيار</summary><div class="opts">' + bars + "</div></details></div>";
+    }).join("");
+
+    /* التوزيع العام */
+    var tot = {}; C.SCALE.forEach(function (o) { tot[o.value] = 0; });
+    res.statements.forEach(function (s) { C.SCALE.forEach(function (o) { tot[o.value] += s.all.counts[o.value] || 0; }); });
+    var allCount = C.SCALE.reduce(function (m, o) { return m + tot[o.value]; }, 0);
+    $("overallDonut").innerHTML = donut(C.SCALE.slice().sort(function (a, b) { return b.value - a.value; }).map(function (o) {
+      return { label: o.label, count: tot[o.value], color: SCALE_COLORS[o.value] || "#0b2a8a" };
+    }), allCount, "إجابة");
+
+    /* مقارنة الفئات */
+    /* دائرة ملونة واحدة بأسلوب Microsoft Forms: كل فئة جزء بلون، وحجم الجزء بحسب متوسطها */
+    function roleMean(code) {
+      var vals = res.statements.map(function (st) { return st.roles[code].mean; }).filter(function (m) { return m != null; });
+      return vals.length ? vals.reduce(function (x, y) { return x + y; }, 0) / vals.length : null;
+    }
+    var cats = roleCodes.map(function (c, i) {
+      return { code: c, label: roleLabel[c], n: res.roleCounts[c], color: PALETTE[i], mean: res.roleCounts[c] ? roleMean(c) : null };
+    });
+    var withData = cats.filter(function (ct) { return ct.mean != null; });
+    var sumMeans = withData.reduce(function (x, ct) { return x + ct.mean; }, 0);
+    (function () {
+      var R = 44, CIRC = 2 * Math.PI * R, acc = 0, segs = "";
+      withData.forEach(function (ct) {
+        var len = ct.mean / sumMeans * CIRC;
+        segs += '<circle cx="60" cy="60" r="' + R + '" fill="none" stroke="' + ct.color + '" stroke-width="22" stroke-dasharray="' + len.toFixed(2) + " " + (CIRC - len).toFixed(2) +
+          '" stroke-dashoffset="' + (-acc).toFixed(2) + '" transform="rotate(-90 60 60)"><title>' + esc(ct.label) + ": " + fmt(ct.mean, 2) + "</title></circle>";
+        acc += len;
+      });
+      var svg = '<svg viewBox="0 0 120 120" role="img" aria-label="مقارنة المتوسطات بين الفئات"><circle cx="60" cy="60" r="' + R + '" fill="none" stroke="#eef1f8" stroke-width="22"/>' + segs +
+        '<text x="60" y="58" text-anchor="middle" font-size="20" font-weight="700" fill="#061a5c" style="font-family:inherit">' + fmt(res.overallMean, 2) + "</text>" +
+        '<text x="60" y="76" text-anchor="middle" font-size="9" fill="#5b6478" style="font-family:inherit">المتوسط العام</text></svg>';
+      var leg = cats.map(function (ct) {
+        return '<div class="dl"><i style="background:' + ct.color + '"></i><span class="dn">' + esc(ct.label) + '</span><span class="dv">' +
+          (ct.mean == null ? "لا توجد مشاركات" : "المتوسط <b>" + fmt(ct.mean, 2) + "</b> (" + ar(ct.n) + (ct.n < 5 ? " – عدد قليل" : "") + ")") + "</span></div>";
+      }).join("");
+      $("roleRings").innerHTML = '<div class="donut-wrap"><div class="donut">' + svg + '</div><div class="dlegend">' + leg + "</div></div>";
+    })();
+
+    /* القيم */
+    var top = res.values.slice(0, 12), mx = top.length ? top[0].count : 1;
+    $("valueBars").innerHTML = top.length
+      ? top.map(function (v) { return hbar(v.label, v.count / mx * 100, ar(v.count), true); }).join("")
+      : '<div class="empty">لا توجد إجابات كافية بعد.</div>';
+
+    /* الإجابات المفتوحة */
+    $("openTabs").innerHTML = C.OPEN_QUESTIONS.map(function (q, i) {
+      return '<button class="tab" role="tab" data-i="' + i + '" aria-selected="' + (i === state.openTab) + '">' + esc(q.short) + "</button>";
+    }).join("");
+    var sel = $("openRole");
+    if (!sel.options.length) {
+      sel.innerHTML = '<option value="">كل الفئات</option>' + C.ROLES.map(function (r) { return '<option value="' + r.code + '">' + esc(r.label) + "</option>"; }).join("");
+    }
+    renderAnswers();
+
+    /* الأيام */
+    var days = res.perDay, mxd = days.reduce(function (m, d) { return Math.max(m, d.count); }, 1);
+    $("spark").innerHTML = days.map(function (d) {
+      return '<div class="col" title="' + d.day + ": " + d.count + '" style="height:' + Math.max(6, d.count / mxd * 100) + '%"><span>' + ar(d.count) + "</span></div>";
+    }).join("");
+    $("sparkLabels").innerHTML = days.length ? "<span>" + days[0].day + "</span><span>" + days[days.length - 1].day + "</span>" : "";
+  }
+
+  function renderAnswers() {
+    var q = state.openTab, role = $("openRole").value, term = $("openSearch").value.trim();
+    var list = state.rows.filter(A.validRow).filter(function (r) {
+      var t = (r.open && r.open[q]) || "";
+      return t && (!role || r.role === role) && (!term || t.indexOf(term) >= 0);
+    });
+    $("openCount").textContent = ar(list.length) + " إجابة";
+    $("answers").innerHTML = list.length
+      ? list.slice().reverse().map(function (r) {
+          return '<div class="answer">' + esc(r.open[q]) + "<small>" + esc(roleLabel[r.role]) + " · " + ar(String(r.t).slice(0, 16)) + "</small></div>";
+        }).join("")
+      : '<div class="empty">لا توجد إجابات مطابقة.</div>';
+  }
+
+  $("openTabs").addEventListener("click", function (e) {
+    var b = e.target.closest(".tab"); if (!b) return;
+    state.openTab = parseInt(b.getAttribute("data-i"), 10);
+    Array.prototype.forEach.call($("openTabs").children, function (t) { t.setAttribute("aria-selected", t === b ? "true" : "false"); });
+    renderAnswers();
+  });
+  $("mainTabs").addEventListener("click", function (e) {
+    var b = e.target.closest(".tab"); if (!b) return;
+    var p = b.getAttribute("data-p");
+    Array.prototype.forEach.call($("mainTabs").children, function (t) { t.setAttribute("aria-selected", t === b ? "true" : "false"); });
+    Array.prototype.forEach.call(document.querySelectorAll("#content .panel"), function (el) { el.hidden = el.getAttribute("data-p") !== p; });
+    window.scrollTo({ top: $("mainTabs").offsetTop - 70, behavior: "smooth" });
+  });
+  window.addEventListener("beforeprint", function () {
+    Array.prototype.forEach.call(document.querySelectorAll("details.more"), function (d) { d.open = true; });
+  });
+  $("openSearch").addEventListener("input", renderAnswers);
+  $("openRole").addEventListener("change", renderAnswers);
+
+  /* ---------- بدء التشغيل: ?demo=1 أو جلسة سابقة ---------- */
+  if (/[?&]demo=1/.test(window.location.search)) { startDemo(); return; }
+  var saved = ""; try { saved = sessionStorage.getItem(PW_KEY) || ""; } catch (x) {}
+  if (saved && C.SCRIPT_URL) {
+    $("loginBox").hidden = true;
+    fetchResults(saved).then(function (res) {
+      if (res && res.ok) enter(res.rows || [], false, res.generated);
+      else { try { sessionStorage.removeItem(PW_KEY); } catch (x) {} $("loginBox").hidden = false; }
+    }).catch(function () { $("loginBox").hidden = false; });
+  }
+})();
+</script>
+</body>
+</html>

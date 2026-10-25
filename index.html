@@ -1,0 +1,321 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <title>استبيان الرؤية والرسالة والقيم | مدرسة بلقيس للبنات (٧–١٠)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <link rel="icon" href="assets/logo.png">
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <img class="logo" src="assets/logo.png" alt="شعار مدرسة بلقيس للبنات (٧–١٠)">
+    <h1>استبيان حول رؤية المدرسة ورسالتها وقيمها</h1>
+    <p class="school" id="schoolName"></p>
+    <p class="intro">نسعى إلى تطوير رؤية المدرسة ورسالتها وقيمها بمشاركة مجتمعنا المدرسي. نرجو مشاركة آرائكم بصدق، وستستخدم الإجابات لأغراض التطوير فقط، ولا يتطلب الاستبيان كتابة الاسم.</p>
+  </div>
+</header>
+
+<div class="progress" id="progress">
+  <div class="wrap inner">
+    <span id="progressText">٠ من ١٢</span>
+    <div class="bar"><i id="progressBar"></i></div>
+  </div>
+</div>
+
+<main class="wrap">
+  <noscript><div class="notice error">يحتاج الاستبيان إلى تفعيل JavaScript في المتصفح.</div></noscript>
+  <div id="demoBanner"></div>
+  <div id="alreadyBanner"></div>
+
+  <form id="form" novalidate autocomplete="off">
+
+    <!-- أولا: صفة المشارك -->
+    <section class="card" id="sec-role">
+      <h2><span class="step">١</span> صفة المشارك</h2>
+      <p class="hint">اختاري صفتك في المدرسة (اختيار واحد).</p>
+      <div class="choices" id="roleChoices"></div>
+      <div class="err-msg">يرجى اختيار صفة المشارك.</div>
+    </section>
+
+    <!-- ثانيا: الاطلاع على النصوص -->
+    <section class="card" id="sec-official">
+      <h2><span class="step">٢</span> الاطلاع على الرؤية والرسالة والقيم</h2>
+      <p class="hint">النصوص المعتمدة للمدرسة، يرجى قراءتها قبل المتابعة.</p>
+      <div class="official">
+        <div class="item"><b>رؤية المدرسة</b><p id="txtVision"></p></div>
+        <div class="item"><b>رسالة المدرسة</b><p id="txtMission"></p></div>
+        <div class="item"><b>قيم المدرسة</b><div class="value-tags" id="txtValues"></div></div>
+      </div>
+    </section>
+
+    <!-- ثالثا: مدى المعرفة -->
+    <section class="card" id="sec-aware">
+      <h2><span class="step">٣</span> مدى المعرفة بها</h2>
+      <p class="hint">هل سبق لك الاطلاع على رؤية المدرسة ورسالتها وقيمها قبل هذا الاستبيان؟</p>
+      <div class="choices" id="awareChoices"></div>
+      <div class="err-msg">يرجى اختيار إجابة.</div>
+    </section>
+
+    <!-- رابعا: إبداء الرأي -->
+    <section class="card" id="sec-likert">
+      <h2><span class="step">٤</span> إبداء الرأي</h2>
+      <p class="hint">يرجى تحديد درجة موافقتك على كل عبارة من العبارات التالية.</p>
+      <div id="statements"></div>
+    </section>
+
+    <!-- خامسا: المقترحات -->
+    <section class="card" id="sec-open">
+      <h2><span class="step">٥</span> مقترحاتكم للتطوير</h2>
+      <p class="hint">هذا القسم اختياري، لكن آراءكم فيه تفيدنا كثيرًا.</p>
+      <div id="openFields"></div>
+    </section>
+
+    <!-- حقل فخ للروبوتات: لا يراه المستخدم -->
+    <div class="hp" aria-hidden="true">
+      <label>اتركه فارغًا <input type="text" name="website" id="hp" tabindex="-1" autocomplete="off"></label>
+    </div>
+
+    <div id="formError"></div>
+
+    <div class="submit-row">
+      <button class="btn gold" type="submit" id="submitBtn">إرسال الاستبيان</button>
+    </div>
+  </form>
+
+  <section class="card thanks" id="thanks" hidden>
+    <div class="check">✓</div>
+    <h2>شكرًا لمشاركتكم</h2>
+    <p>آراؤكم تسهم في بناء مستقبل أفضل لطالباتنا.</p>
+    <button class="link-btn" id="newEntry" type="button">هذا جهاز مشترك؟ إدخال مشاركة جديدة</button>
+  </section>
+</main>
+
+<footer>مدرسة بلقيس للبنات (٧–١٠) · سلطنة عُمان</footer>
+
+<script src="config.js"></script>
+<script>
+(function () {
+  "use strict";
+  var C = window.SURVEY_CONFIG;
+  var DONE_KEY = "balqis_vmv_survey_v1_done";
+  var DEMO_KEY = "balqis_vmv_survey_v1_demo_rows";
+  var TOTAL_REQUIRED = 2 + C.STATEMENTS.length;
+
+  var $ = function (id) { return document.getElementById(id); };
+  var AR_DIGITS = "٠١٢٣٤٥٦٧٨٩";
+  function ar(n) { return String(n).replace(/\d/g, function (d) { return AR_DIGITS[d]; }); }
+  function el(tag, attrs, html) {
+    var e = document.createElement(tag);
+    for (var k in (attrs || {})) { e.setAttribute(k, attrs[k]); }
+    if (html != null) e.textContent = html;
+    return e;
+  }
+
+  /* ---------- بناء الصفحة من الإعدادات ---------- */
+  $("schoolName").textContent = C.SCHOOL_NAME;
+  $("txtVision").textContent = C.VISION;
+  $("txtMission").textContent = C.MISSION;
+  C.VALUES.forEach(function (v) { $("txtValues").appendChild(el("span", {}, v)); });
+
+  function buildChoices(containerId, name, items) {
+    var box = $(containerId);
+    items.forEach(function (it) {
+      var lab = el("label", { "class": "choice" });
+      var inp = el("input", { type: "radio", name: name, value: it.code });
+      lab.appendChild(inp);
+      lab.appendChild(el("span", {}, it.label));
+      box.appendChild(lab);
+    });
+  }
+  buildChoices("roleChoices", "role", C.ROLES);
+  buildChoices("awareChoices", "aware", C.AWARE);
+
+  var stBox = $("statements");
+  C.STATEMENTS.forEach(function (s, i) {
+    var fs = el("fieldset", { "class": "q", id: "q" + i });
+    var lg = el("legend");
+    lg.appendChild(el("span", { "class": "num" }, ar(i + 1)));
+    lg.appendChild(document.createTextNode(s.text));
+    fs.appendChild(lg);
+    var sc = el("div", { "class": "scale", role: "radiogroup" });
+    C.SCALE.forEach(function (o) {
+      var lab = el("label", { "class": "opt" });
+      lab.appendChild(el("input", { type: "radio", name: "q" + i, value: String(o.value) }));
+      lab.appendChild(el("span", {}, o.label));
+      sc.appendChild(lab);
+    });
+    fs.appendChild(sc);
+    fs.appendChild(el("div", { "class": "err-msg" }, "يرجى اختيار درجة الموافقة لهذه العبارة."));
+    stBox.appendChild(fs);
+  });
+
+  var openBox = $("openFields");
+  C.OPEN_QUESTIONS.forEach(function (q, i) {
+    var f = el("div", { "class": "field" });
+    f.appendChild(el("label", { "for": "open" + i }, ar(i + 1) + ". " + q.title));
+    f.appendChild(el("textarea", { id: "open" + i, maxlength: String(C.MAX_TEXT), rows: "3" }));
+    f.appendChild(el("div", { "class": "count", id: "cnt" + i }, ""));
+    openBox.appendChild(f);
+    var ta = f.querySelector("textarea");
+    ta.addEventListener("input", function () {
+      var left = C.MAX_TEXT - ta.value.length;
+      $("cnt" + i).textContent = left < 100 ? "المتبقي: " + ar(left) + " حرف" : "";
+    });
+  });
+
+  /* ---------- وضع التجربة (قبل ربط Google Sheets) ---------- */
+  if (!C.SCRIPT_URL) {
+  }
+
+  /* ---------- منع التكرار البسيط ---------- */
+  function showAlready() {
+    $("alreadyBanner").innerHTML = '<div class="notice info">سجّلنا مشاركة من هذا الجهاز من قبل، شكرًا لك. إن كان الجهاز مشتركًا يمكنك <button type="button" class="link-btn" id="allowAgain">إدخال مشاركة جديدة</button>.</div>';
+    $("allowAgain").addEventListener("click", function () {
+      try { localStorage.removeItem(DONE_KEY); } catch (e) {}
+      $("alreadyBanner").innerHTML = "";
+    });
+  }
+  try { if (localStorage.getItem(DONE_KEY)) showAlready(); } catch (e) {}
+
+  /* ---------- التقدم ---------- */
+  function answeredCount() {
+    var n = 0;
+    if (document.querySelector('input[name="role"]:checked')) n++;
+    if (document.querySelector('input[name="aware"]:checked')) n++;
+    for (var i = 0; i < C.STATEMENTS.length; i++) {
+      if (document.querySelector('input[name="q' + i + '"]:checked')) n++;
+    }
+    return n;
+  }
+  function updateProgress() {
+    var n = answeredCount();
+    $("progressText").textContent = ar(n) + " من " + ar(TOTAL_REQUIRED);
+    $("progressBar").style.width = Math.round(n / TOTAL_REQUIRED * 100) + "%";
+  }
+  $("form").addEventListener("change", function (e) {
+    updateProgress();
+    var host = e.target.closest(".card, .q");
+    if (host) host.classList.remove("invalid");
+    var q = e.target.closest(".q");
+    if (q) q.classList.remove("invalid");
+  });
+  updateProgress();
+
+  /* ---------- التحقق ---------- */
+  function validate() {
+    var firstBad = null;
+    function mark(node, bad) {
+      node.classList.toggle("invalid", bad);
+      if (bad && !firstBad) firstBad = node;
+    }
+    mark($("sec-role"), !document.querySelector('input[name="role"]:checked'));
+    mark($("sec-aware"), !document.querySelector('input[name="aware"]:checked'));
+    var anyLikertBad = false;
+    for (var i = 0; i < C.STATEMENTS.length; i++) {
+      var bad = !document.querySelector('input[name="q' + i + '"]:checked');
+      mark($("q" + i), bad);
+      if (bad) anyLikertBad = true;
+    }
+    return firstBad;
+  }
+
+  /* ---------- الإرسال ---------- */
+  var sending = false;
+  function showError(msg) {
+    $("formError").innerHTML = "";
+    var d = el("div", { "class": "notice error", role: "alert" }, msg);
+    $("formError").appendChild(d);
+  }
+
+  function collect() {
+    var answers = [];
+    for (var i = 0; i < C.STATEMENTS.length; i++) {
+      answers.push(parseInt(document.querySelector('input[name="q' + i + '"]:checked').value, 10));
+    }
+    return {
+      action: "submit",
+      role: document.querySelector('input[name="role"]:checked').value,
+      aware: document.querySelector('input[name="aware"]:checked').value,
+      answers: answers,
+      open: C.OPEN_QUESTIONS.map(function (q, i) { return $("open" + i).value.trim().slice(0, C.MAX_TEXT); }),
+      hp: $("hp").value
+    };
+  }
+
+  function finishOk() {
+    try { localStorage.setItem(DONE_KEY, String(Date.now())); } catch (e) {}
+    $("form").hidden = true;
+    $("progress").hidden = true;
+    $("alreadyBanner").innerHTML = "";
+    $("thanks").hidden = false;
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  $("form").addEventListener("submit", function (ev) {
+    ev.preventDefault();
+    if (sending) return;
+    $("formError").innerHTML = "";
+    var bad = validate();
+    if (bad) {
+      bad.scrollIntoView({ behavior: "smooth", block: "center" });
+      showError("بعض الأسئلة المطلوبة لم تُجب بعد، وقد وُضعت عليها علامة حمراء.");
+      return;
+    }
+    var payload = collect();
+
+    /* وضع التجربة: حفظ محلي فقط */
+    if (!C.SCRIPT_URL) {
+      try {
+        var rows = JSON.parse(localStorage.getItem(DEMO_KEY) || "[]");
+        rows.push({ t: new Date().toISOString(), role: payload.role, aware: payload.aware, q: payload.answers, open: payload.open });
+        localStorage.setItem(DEMO_KEY, JSON.stringify(rows));
+      } catch (e) {}
+      finishOk();
+      return;
+    }
+
+    sending = true;
+    var btn = $("submitBtn");
+    btn.disabled = true;
+    btn.textContent = "جارٍ الإرسال…";
+
+    var ctrl = ("AbortController" in window) ? new AbortController() : null;
+    var timer = setTimeout(function () { if (ctrl) ctrl.abort(); }, 25000);
+
+    fetch(C.SCRIPT_URL, {
+      method: "POST",
+      body: JSON.stringify(payload),          // نص عادي: لا يحتاج preflight
+      signal: ctrl ? ctrl.signal : undefined
+    })
+      .then(function (r) { return r.json(); })
+      .then(function (res) {
+        clearTimeout(timer);
+        if (res && res.ok) { finishOk(); }
+        else { throw new Error((res && res.error) || "server"); }
+      })
+      .catch(function () {
+        clearTimeout(timer);
+        showError("تعذّر إرسال الاستبيان. يرجى التأكد من الاتصال بالإنترنت ثم الضغط على «إرسال» مرة أخرى. إجاباتك ما زالت محفوظة في الصفحة.");
+      })
+      .then(function () {
+        sending = false;
+        btn.disabled = false;
+        btn.textContent = "إرسال الاستبيان";
+      });
+  });
+
+  $("newEntry").addEventListener("click", function () {
+    try { localStorage.removeItem(DONE_KEY); } catch (e) {}
+    window.location.reload();
+  });
+})();
+</script>
+</body>
+</html>
